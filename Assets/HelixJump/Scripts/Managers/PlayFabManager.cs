@@ -5,6 +5,8 @@ using PlayFab;
 using PlayFab.ClientModels;
 using System;
 using TMPro;
+using UnityEngine.UI;
+
 
 public class PlayfabManager : MonoBehaviour
 {
@@ -26,6 +28,9 @@ public class PlayfabManager : MonoBehaviour
     public event Action<bool> OnScorePosted;
     public event Action<List<PlayerLeaderboardEntry>> OnLeaderboardReceived;
     public event Action<bool> OnDisplayNameSet;
+
+    public ScrollRect leaderboardScroll;
+
 
     private void Awake()
     {
@@ -138,21 +143,24 @@ public class PlayfabManager : MonoBehaviour
     public Transform contentParent;
     private void OnGetLeaderboardSuccess(GetLeaderboardResult result)
     {
-        OnLeaderboardReceived?.Invoke(result.Leaderboard);
+        float savedPos = leaderboardScroll.verticalNormalizedPosition;
 
-        for (int i = contentParent.transform.childCount - 1; i >= 0; i--)
-        {
-            Destroy(contentParent.transform.GetChild(i).gameObject);
-        }
+        for (int i = contentParent.childCount - 1; i >= 0; i--)
+            Destroy(contentParent.GetChild(i).gameObject);
+
         foreach (var item in result.Leaderboard)
         {
             GameObject playerItem = Instantiate(PlayerItemPrefab, contentParent, false);
-            var leaderBoardContents = playerItem.GetComponent<PlayerItemUI>();
-            leaderBoardContents.rankText.text = (item.Position + 1).ToString();
-            leaderBoardContents.playerNameText.text = item.DisplayName;
-            leaderBoardContents.scoreText.text = item.StatValue.ToString();
+            var ui = playerItem.GetComponent<PlayerItemUI>();
+            ui.rankText.text = (item.Position + 1).ToString();
+            ui.playerNameText.text = item.DisplayName;
+            ui.scoreText.text = item.StatValue.ToString();
         }
+
+        Canvas.ForceUpdateCanvases();
+        leaderboardScroll.verticalNormalizedPosition = savedPos;
     }
+
 
     private void OnGetLeaderboardFailure(PlayFabError error)
     {

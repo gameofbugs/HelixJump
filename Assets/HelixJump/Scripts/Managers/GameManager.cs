@@ -75,7 +75,9 @@ public class GameManager : MonoBehaviour
     public void OnLeadearButtonClicked()
     {
         leaderboard.SetActive(true);
+        PlayfabManager.LeaderBoardInstance.GetHighScores(100); // load once here
     }
+
     public void RefreshBotton()
     {
         PlayfabManager.LeaderBoardInstance.GetHighScores(100);
